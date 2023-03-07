@@ -82,7 +82,7 @@ func (p *runner) InputStrings(input []string) *runner {
 }
 
 // Run peco command
-func (p *runner) RunPeco(ctx context.Context) (selected string, ok bool, err error) {
+func (p *runner) RunPeco(ctx context.Context) (selected []string, ok bool, err error) {
 	result := bytes.NewBufferString("")
 
 	peco := peco.New()
@@ -95,12 +95,12 @@ func (p *runner) RunPeco(ctx context.Context) (selected string, ok bool, err err
 		if err.Error() == "collect results" {
 			// peco returns this error when user selected a line
 			peco.PrintResults()
-			return result.String(), true, nil
+			return strings.Split(result.String(), "\n"), true, nil
 		}
 		if err.Error() == "user canceled" {
-			return "", false, nil
+			return []string{}, false, nil
 		}
 	}
 
-	return "", false, errors.New("unknown peco exit status")
+	return []string{}, false, errors.New("unknown peco exit status")
 }

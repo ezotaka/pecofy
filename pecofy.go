@@ -95,7 +95,7 @@ func (p *runner) RunPeco(ctx context.Context) (selected []string, ok bool, err e
 		if err.Error() == "collect results" {
 			// peco returns this error when user selected a line
 			peco.PrintResults()
-			return strings.Split(result.String(), "\n"), true, nil
+			return strings.Split(strings.TrimSuffix(result.String(), "\n"), "\n"), true, nil
 		}
 		if err.Error() == "user canceled" {
 			return []string{}, false, nil

@@ -82,7 +82,7 @@ func (p *Runner) InputStrings(input []string) *Runner {
 }
 
 // Run peco command
-func (p *Runner) Run(ctx context.Context) (selected []string, ok bool, err error) {
+func (p *Runner) Run() (selected []string, ok bool, err error) {
 	return p.RunWithContext(context.Background())
 }
 

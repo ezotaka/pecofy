@@ -29,43 +29,43 @@ import (
 	"github.com/peco/peco"
 )
 
-// peco runner
-type runner struct {
+// peco Runner
+type Runner struct {
 	argv  []string
 	input strings.Builder
 }
 
 // Instantiate peco runner
-func New() *runner {
-	return &runner{}
+func New() *Runner {
+	return &Runner{}
 }
 
 // --prompt option for peco
-func (p *runner) Prompt(prompt string) *runner {
+func (p *Runner) Prompt(prompt string) *Runner {
 	p.argv = append(p.argv, "--prompt", prompt)
 	return p
 }
 
 // --query option for peco
-func (p *runner) Query(query string) *runner {
+func (p *Runner) Query(query string) *Runner {
 	p.argv = append(p.argv, "--query", query)
 	return p
 }
 
 // --select-1 option for peco
-func (p *runner) SelectOne() *runner {
+func (p *Runner) SelectOne() *Runner {
 	p.argv = append(p.argv, "--select-1")
 	return p
 }
 
 // --selection-prefix option for peco
-func (p *runner) SelectionPrefix(prefix string) *runner {
+func (p *Runner) SelectionPrefix(prefix string) *Runner {
 	p.argv = append(p.argv, "--selection-prefix", "prefix")
 	return p
 }
 
 // Pass string to peco
-func (p *runner) InputString(input string) *runner {
+func (p *Runner) InputString(input string) *Runner {
 	p.input.WriteString(input)
 	if !strings.HasSuffix(input, "\n") {
 		p.input.WriteString("\n")
@@ -74,7 +74,7 @@ func (p *runner) InputString(input string) *runner {
 }
 
 // Pass strings to peco
-func (p *runner) InputStrings(input []string) *runner {
+func (p *Runner) InputStrings(input []string) *Runner {
 	for _, i := range input {
 		p.InputString(i)
 	}
@@ -82,7 +82,12 @@ func (p *runner) InputStrings(input []string) *runner {
 }
 
 // Run peco command
-func (p *runner) RunPeco(ctx context.Context) (selected []string, ok bool, err error) {
+func (p *Runner) Run(ctx context.Context) (selected []string, ok bool, err error) {
+	return p.RunWithContext(context.Background())
+}
+
+// Run peco command with Context
+func (p *Runner) RunWithContext(ctx context.Context) (selected []string, ok bool, err error) {
 	result := bytes.NewBufferString("")
 
 	peco := peco.New()

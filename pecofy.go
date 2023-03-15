@@ -24,24 +24,34 @@ import (
 	"context"
 )
 
-type pecofy struct {
+type containerPecofy[T LineContainer] struct {
 	option Option
 	peco   Runner
 }
 
-func New() *pecofy {
-	return &pecofy{Option{}, newPeco()}
+type stringPecofy containerPecofy[StringLineContainer]
+
+func New() *stringPecofy {
+	return &stringPecofy{Option{}, newPeco()}
 }
 
-func (p *pecofy) Option() *Option {
+func NewContainer[T LineContainer]() *containerPecofy[T] {
+	return &containerPecofy[T]{Option{}, newPeco()}
+}
+
+func (p *containerPecofy[T]) Option() *Option {
 	return &p.option
 }
 
-func NewMock(indexes ...uint64) *pecofy {
-	return &pecofy{Option{}, newMock(indexes...)}
+func NewMock(indexes ...uint64) *stringPecofy {
+	return &stringPecofy{Option{}, newMock(indexes...)}
 }
 
-func (p *pecofy) Run(ctx context.Context, lines []string) (selected []string, err error) {
+func NewContainerMock[T LineContainer](indexes ...uint64) *containerPecofy[T] {
+	return &containerPecofy[T]{Option{}, newMock(indexes...)}
+}
+
+func (p *stringPecofy) Run(ctx context.Context, lines []string) (selected []string, err error) {
 	selected = []string{}
 	var input Input
 	for _, l := range lines {
@@ -55,6 +65,15 @@ func (p *pecofy) Run(ctx context.Context, lines []string) (selected []string, er
 	return
 }
 
-func (p *pecofy) RunContainers(ctx context.Context, lines []LineContainer) (selected []LineContainer, err error) {
-	return p.peco.Run(ctx, &p.option, NewInput().AddLineContainers(lines...))
+func (p *containerPecofy[T]) Run(ctx context.Context, lines []T) (selected []T, err error) {
+	containers := []LineContainer{}
+	for _, l := range lines {
+		containers = append(containers, l)
+	}
+	result, err := p.peco.Run(ctx, &p.option, newInput().AddLineContainers(containers...))
+	selected = []T{}
+	for _, r := range result {
+		selected = append(selected, r.(T))
+	}
+	return
 }

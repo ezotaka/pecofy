@@ -40,7 +40,7 @@ type Input struct {
 	lines []LineContainer
 }
 
-func NewInput() *Input {
+func newInput() *Input {
 	return &Input{}
 }
 

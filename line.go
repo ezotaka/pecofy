@@ -17,44 +17,47 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-// Use peco to let users of the CLI tool select any string
 package pecofy
 
-import (
-	"context"
-)
+import "strings"
 
-type pecofy struct {
-	option Option
-	peco   Runner
+type LineContainer interface {
+	String() string
+	DisplayString() string
 }
 
-func New() *pecofy {
-	return &pecofy{Option{}, newPeco()}
+type StringLineContainer string
+
+func (s StringLineContainer) String() string {
+	return string(s)
 }
 
-func (p *pecofy) Option() *Option {
-	return &p.option
+func (s StringLineContainer) DisplayString() string {
+	return string(s)
 }
 
-func NewMock(indexes ...uint64) *pecofy {
-	return &pecofy{Option{}, newMock(indexes...)}
+type Input struct {
+	lines []LineContainer
 }
 
-func (p *pecofy) Run(ctx context.Context, lines []string) (selected []string, err error) {
-	selected = []string{}
-	var input Input
-	for _, l := range lines {
-		input.AddLineContainers(StringLineContainer(l))
+func NewInput() *Input {
+	return &Input{}
+}
+
+func (i *Input) AddLineContainers(lines ...LineContainer) *Input {
+	i.lines = append(i.lines, lines...)
+	return i
+}
+
+func (i *Input) Get(index uint64) LineContainer {
+	return i.lines[index]
+}
+
+func (i *Input) String() string {
+	var lines []string
+	for _, l := range i.lines {
+		// line must not contain "\n"
+		lines = append(lines, strings.ReplaceAll(l.DisplayString(), "\n", "\\n"))
 	}
-	if result, err := p.peco.Run(ctx, &p.option, &input); err == nil {
-		for _, r := range result {
-			selected = append(selected, string(r.(StringLineContainer)))
-		}
-	}
-	return
-}
-
-func (p *pecofy) RunContainers(ctx context.Context, lines []LineContainer) (selected []LineContainer, err error) {
-	return p.peco.Run(ctx, &p.option, NewInput().AddLineContainers(lines...))
+	return strings.Join(lines, "\n")
 }
